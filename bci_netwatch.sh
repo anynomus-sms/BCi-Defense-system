@@ -191,3 +191,25 @@ EOF
     *) echo "Invalid option"; sleep 1 ;;
   esac
 done
+REPO_URL="https://github.com/anonymous-sms/netwatch.git"
+LOCAL_DIR="$(pwd)"
+
+check_update() {
+  if [ -d "$LOCAL_DIR/.git" ]; then
+    echo "🔄 Checking for updates..."
+    git fetch origin main >/dev/null 2>&1
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse @{u})
+    if [ "$LOCAL" != "$REMOTE" ]; then
+      echo "⚠ Update available! Updating now..."
+      git pull origin main
+      chmod +x netwatch_v4.sh
+      echo "✅ Updated. Please re-run the script."
+      exit 0
+    else
+      echo "✅ Already up-to-date."
+    fi
+  fi
+}
+
+
