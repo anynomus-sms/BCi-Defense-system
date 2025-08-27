@@ -29,7 +29,7 @@ check_update() {
 
 # === Show connected devices on local WiFi ===
 show_connected_devices() {
-  echo "📡 Scanning for devices on your WiFi..."
+  echo "📡 Scanning for devices on your WiFi... (by anonymous-sms)"
   if command -v arp-scan &>/dev/null; then
     sudo arp-scan --localnet
   else
@@ -39,26 +39,37 @@ show_connected_devices() {
   fi
 }
 
-# === Show processes currently using internet ===
+# === Show processes currently using internet in table ===
 show_internet_flow() {
-  echo "🌐 Active Internet Flow (Processes using internet):"
-  echo "---------------------------------------------"
-  sudo ss -tunp | awk 'NR>1 {print $5 "\t" $7}' | sed 's/.*pid=//g' | awk '{print "IP:Port = " $1 "\tProcess:" $2}'
-  echo "---------------------------------------------"
+  echo "🌐 Active Internet Flow (Processes using internet) (by anonymous-sms)"
+  echo "------------------------------------------------------------"
+  printf "%-25s %-8s %-15s\n" "Peer IP" "Port" "Process"
+  echo "------------------------------------------------------------"
+  sudo ss -tunp | awk 'NR>1 {print $5 "\t" $7}' | \
+  while IFS=$'\t' read -r addr proc; do
+    ip=$(echo "$addr" | cut -d':' -f1)
+    port=$(echo "$addr" | cut -d':' -f2)
+    pname=$(echo "$proc" | sed -n 's/.*users:(("\([^"]*\).*/\1/p')
+    if [ -z "$pname" ]; then pname="unknown"; fi
+    printf "%-25s %-8s %-15s\n" "$ip" "$port" "$pname"
+  done
+  echo "------------------------------------------------------------"
 }
 
-# === Scan open ports on current device (self) ===
+# === Scan open ports on current device (local system) ===
 scan_open_ports() {
-  echo "🔍 Scanning for open ports on this system..."
+  echo "🔍 Scanning for open ports on this system... (by anonymous-sms)"
+  echo "------------------------------------------------------------"
   if command -v netstat &>/dev/null; then
-    sudo netstat -tuln | grep LISTEN
+    sudo netstat -tulnp | grep LISTEN
   elif command -v ss &>/dev/null; then
-    sudo ss -tuln
+    sudo ss -tulnp | grep LISTEN
   else
     echo "⚠ Neither 'netstat' nor 'ss' is available. Please install net-tools."
   fi
-  echo "---------------------------------------------"
-  echo "⚠ Open ports are potential entry points for attackers. Close unused services."
+  echo "------------------------------------------------------------"
+  echo "⚠ Reminder: Open ports are potential entry points."
+  echo "   Close unused services for better security. (by anonymous-sms)"
 }
 
 # === Menu ===
@@ -80,7 +91,7 @@ main_menu() {
     2) show_connected_devices ;;
     3) show_internet_flow ;;
     4) scan_open_ports ;;
-    5) echo "👋 Bye!"; exit 0 ;;
+    5) echo "👋 Bye! Stay safe online! (by anonymous-sms)"; exit 0 ;;
     *) echo "❌ Invalid option";;
   esac
   echo
