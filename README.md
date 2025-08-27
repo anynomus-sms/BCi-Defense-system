@@ -1,22 +1,42 @@
-# 🛡️ BCI NetWatch  
-*A lightweight suspicious connection detector*  
-**by anonymous-sms**  
+# 🛡️ BCI NetWatch
+*A lightweight suspicious connection detector & defense helper*  
+**by anonymous-sms**
+
+---
+
+## 📖 About
+**BCI NetWatch** is a simple bash-based monitoring tool designed to help you keep track of active connections on your Linux machine.  
+It can detect **unknown or suspicious IPs**, give you options to **allow / block / ignore**, and log everything with a watermark.  
+
+It’s meant for **learning, experimenting, and local defense**.  
+Not a replacement for professional IDS/IPS tools like Snort or Suricata.  
 
 ---
 
 ## 📥 Installation
-1. Open your terminal (Linux recommended: Kali, Ubuntu, Debian).  
-2. Create a new file called `bci_netwatch.sh`:  
+
+1. **Clone the repository**
    ```bash
-   nano bci_netwatch.sh
+   git clone https://github.com/anonymous-sms/bci-netwatch.git
+   cd bci-netwatch
 
-    Copy + paste the script code into it.
+    Give execution permission
 
-    Save and exit (CTRL+O, Enter, CTRL+X).
+chmod +x bci_netwatch.sh
 
-    Make it executable:
+(Optional) Check dependencies
+This script uses basic Linux commands:
 
-    chmod +x bci_netwatch.sh
+    netstat or ss
+
+    awk
+
+    iptables
+
+On Debian/Ubuntu/Kali, you can install them with:
+
+    sudo apt update
+    sudo apt install net-tools iptables
 
 ▶️ Usage
 
@@ -36,48 +56,101 @@ You’ll see the main menu:
 =============================
 
 🛠 Features
+1. List Active Connections
 
-    [1] List active connections
-    Shows all currently active IP connections on your system.
+Shows all current IP connections on your system (similar to netstat -tunap).
+Useful to understand which services are connected right now.
+2. Update Known Hosts
 
-    [2] Update known hosts
-    Saves your current “safe” IPs/domains into known_hosts.txt.
+Saves the current “safe” connections into known_hosts.txt.
 
-        Run this first so common services (Google, GitHub, etc.) are marked as trusted.
+    First time you run the script → do this step.
 
-    [3] Scan suspicious connections
-    Detects new or unknown IPs.
-    When something new pops up, you decide:
+    Common IPs like Google, GitHub, DNS servers will be saved here.
 
-        (a) → Allow → add it to the trusted list.
+    Anything in this list won’t be flagged as suspicious later.
 
-        (b) → Block → drop traffic to that IP using iptables.
+3. Scan Suspicious Connections
 
-        (i) → Ignore → skip just this time.
+Checks current connections against your known_hosts.txt.
 
-    [0] Exit
-    Quit the tool.
+    If an IP is not in the safe list, you’ll get an alert.
 
-📂 Files
+    You can choose:
 
-    known_hosts.txt → the database of trusted IPs.
+        (a) Allow → add it permanently to trusted list.
 
-    bci_netwatch.log → all activity logs (with watermark by anonymous-sms).
+        (b) Block → block the IP using iptables.
 
-⚠️ Notes
+        (i) Ignore → skip only for this session.
 
-    This tool only monitors networks you’ve actually connected to before.
+Example:
 
-    It won’t randomly scan the entire internet (safe for personal use).
+Suspicious connection detected: 185.xxx.xxx.xxx
+[a] Allow / [b] Block / [i] Ignore ?
 
-    If a weird connection shows up, you’ll get an alert and can block it instantly.
+4. Exit
 
-    Use this responsibly — it’s meant for learning and local defense.
+Cleanly quit the program.
+📂 Files Generated
+
+    known_hosts.txt → your personal whitelist (trusted IPs).
+
+    bci_netwatch.log → log file with all detections & actions.
+    (Every log entry includes the watermark by anonymous-sms).
 
 🌟 Example Workflow
 
-    First run → choose [2] Update known hosts → this marks all your usual connections as safe.
+    First time setup
 
-    Later → run [3] Scan suspicious connections → if a new IP appears (like 185.xxx.xxx.xxx), you’ll be alerted.
+./bci_netwatch.sh
 
-    Decide whether to allow, block, or ignore.
+→ Choose [2] Update known hosts.
+This will mark all normal connections (Google, GitHub, DNS, etc.) as trusted.
+
+Monitoring mode
+Run again later and pick [3] Scan suspicious connections.
+
+    If a new IP shows up, you’ll get an alert.
+
+    Decide if you want to allow, block, or ignore.
+
+Blocking suspicious IPs
+If you select block, NetWatch will automatically add an iptables rule to drop packets from that IP.
+You can review blocked IPs with:
+
+sudo iptables -L -n
+
+Logs
+All activity is stored in bci_netwatch.log.
+Example log:
+
+    [2025-08-27 20:15] Suspicious IP detected: 185.xxx.xxx.xxx → Action: BLOCKED
+    -- by anonymous-sms
+
+⚠️ Notes & Limitations
+
+    This tool only monitors networks you’ve already connected to.
+
+    It doesn’t scan the entire internet (safe for personal use).
+
+    It’s not stealthy; advanced users might notice iptables rules.
+
+    Intended for educational / competition projects (e.g. ICEP/ICEO).
+
+    Do not use it for offensive security or against networks you don’t own.
+
+💡 Ideas for Future Improvements
+
+    Add a simple web dashboard to visualize suspicious IPs.
+
+    Export logs in JSON/CSV for analysis.
+
+    Integrate with email or Telegram bot alerts.
+
+    Auto-remove old allowed hosts after X days.
+
+👤 Credits
+
+Created with ⚡ by anonymous-sms
+
