@@ -50,7 +50,7 @@ chmod +x bci_netwatch_safe.sh
 
 Run it:
 
-./bci_netwatch_safe.sh
+./bci_netwatch.sh
 
 🕹️ Usage
 
